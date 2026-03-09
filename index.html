@@ -3,88 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konut SMP Sezon 2 - Modern Minecraft Deneyimi</title>
+    <title>Luvax Dijital | Vercel Mailer</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-            text-align: center;
-        }
-        .header {
-            background-color: #4CAF50; /* Minecraft Yeşili */
-            color: white;
-            padding: 20px 0;
-            border-bottom: 5px solid #38761D;
-        }
-        .container {
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .info-box {
-            background-color: white;
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .ip-address {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #D62727; /* Kırmızı, dikkat çekmesi için */
-            margin: 10px 0;
-        }
-        .button {
-            display: inline-block;
-            background-color: #FF9900; /* Turuncu */
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 15px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        .button:hover {
-            background-color: #e68a00;
-        }
+        body { font-family: sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; padding: 20px; }
+        .box { width: 100%; max-width: 500px; background: #1e293b; padding: 20px; border-radius: 12px; }
+        input, textarea, button { width: 100%; margin: 10px 0; padding: 12px; border-radius: 6px; border: 1px solid #334155; box-sizing: border-box; background: #0f172a; color: white; }
+        button { background: #0ea5e9; font-weight: bold; cursor: pointer; border: none; }
+        button:disabled { opacity: 0.5; }
+        #log { font-size: 13px; color: #94a3b8; max-height: 150px; overflow-y: auto; background: #000; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <h1>Konut SMP Sezon 2</h1>
-        <p>Gelişmiş Modern Hayatta Kalma Deneyimi</p>
+    <div class="box">
+        <h2 style="color:#38bdf8; text-align:center;">Luvax Otomasyon</h2>
+        <input type="password" id="apiKey" placeholder="Google Uygulama Şifresi (doruk@luvax.com.tr)">
+        <textarea id="emails" rows="3" placeholder="Mailleri virgülle ayır (a@mail.com, b@mail.com)"></textarea>
+        <input type="text" id="subject" placeholder="Konu Başlığı">
+        <textarea id="body" rows="5" placeholder="Mesaj içeriği..."></textarea>
+        <input type="number" id="interval" placeholder="Bekleme Süresi (Saniye)" value="10">
+        <button id="startBtn">GÖNDERİMİ BAŞLAT</button>
+        <div id="log">İşlem bekleniyor...</div>
     </div>
 
-    <div class="container">
-        
-        <div class="info-box">
-            <h2>Sunucuya Katılın</h2>
-            <p>En güncel Minecraft özellikleriyle dolu Konut SMP'de yerinizi alın!</p>
-            
-            <p><strong>Sunucu Adresi:</strong></p>
-            <div class="ip-address">KonutSmpSezon2.aternos.me</div>
-            
-            <p><strong>Desteklenen Sürümler:</strong> 1.21 - 1.21.8</p>
-            
-            <a href="https://www.tiktok.com/@swazy313" class="button" target="_blank">Güncel Durum İçin TikTok'a Git</a>
-        </div>
+    <script>
+        const logDiv = document.getElementById('log');
+        const startBtn = document.getElementById('startBtn');
 
-        <div class="info-box">
-            <h2>Özellikler</h2>
-            <ul>
-                <li>✅ Saf Survival Multiplayer (SMP) Deneyimi</li>
-                <li>✅ Aktif ve Yardımsever Topluluk</li>
-                <li>✅ Aternos Üzerinden Kolay Erişim</li>
-                <li>✅ Düzenli Etkinlikler ve Güncellemeler</li>
-            </ul>
-        </div>
-        
-    </div>
+        const addLog = (msg) => {
+            const p = document.createElement('p');
+            p.textContent = `> ${msg}`;
+            logDiv.prepend(p);
+        };
 
+        startBtn.onclick = async () => {
+            const emails = document.getElementById('emails').value.split(',').map(e => e.trim()).filter(e => e);
+            const interval = parseInt(document.getElementById('interval').value) * 1000;
+            const apiKey = document.getElementById('apiKey').value;
+            const subject = document.getElementById('subject').value;
+            const body = document.getElementById('body').value;
+
+            if(!apiKey || emails.length === 0) return alert("Eksik bilgi!");
+
+            startBtn.disabled = true;
+            addLog("Otomasyon başladı...");
+
+            for (let i = 0; i < emails.length; i++) {
+                const isLast = (i === emails.length - 1);
+                addLog(`${emails[i]} gönderiliyor...`);
+
+                try {
+                    const res = await fetch('/api/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ apiKey, targetEmail: emails[i], subject, body, isLast })
+                    });
+                    const data = await res.json();
+                    if(data.success) addLog(`Başarılı: ${emails[i]}`);
+                    else addLog(`Hata: ${data.error}`);
+                } catch (err) {
+                    addLog(`Bağlantı Hatası: ${emails[i]}`);
+                }
+
+                if (!isLast) {
+                    addLog(`${interval/1000} saniye bekleniyor...`);
+                    await new Promise(r => setTimeout(r, interval));
+                }
+            }
+            addLog("TÜM İŞLEMLER BİTTİ.");
+            startBtn.disabled = false;
+        };
+    </script>
 </body>
 </html>
